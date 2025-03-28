@@ -1,27 +1,89 @@
 var canvas = document.getElementById("gameBoard");
 var ctx = canvas.getContext("2d");
 
+// 2 bila
+// 1 tre
+// 1 stein
+
+// interval hindranir oftar
+
+// skipta leikbord i 4 dalka
+// row1A row1B
+// row2A row2B
+// row3A row3B
+// row4A row4B
+
+
+// function sem gerir hindranir a 4-6 mogulegum dalkum
+
+
 var running = false; // til ad stoppa og starta game state
 var vegaLinuGeymsla = [];
 var obstacleGeymsla = [];
 
-// var x = 280;
-// var y = 720;
+var hindrunX = Math.random() * 600;
+
+if (hindrunX <= 100) {
+
+}
+
 var dx = 5;
 var dy = 5;
 var yVegLina = 20;
 var xVegLina = 294;
 var gamePoints = 0;
 
+
+// playerMain
+const playerImg = new Image();
+playerImg.src = '/assets/player/playerMain.png'
+
+// player turn left
+const playerLeft = new Image();
+playerLeft.src = '/assets/player/playerTurnL.png'
+
+// player turn right
+const playerRight = new Image();
+playerRight.src = '/assets/player/playerTurnR.png'
+
 let player = {
-    color: "red",
     x: 280,
-    y: 720,
-    width: 40,
-    height: 70
+    y: 680,
+    width: 110,
+    height: 110
 }
 
-//Klasi sem við réttum ctx og yhnitið á línunni
+// --- obstacles ---
+const skySources = ["sky_1.png", "sky_2.png", "sky_3.png", "sky_4.png", "sky_5.png"];
+const groundSources = ["ground_1.png", "ground_2.png", "ground_3.png", "ground_4.png", "ground_5.png"];
+
+// Fall sem býr til lista af myndum út frá skránöfnum
+function loadImages(sources) {
+    return sources.map(src => {
+        const img = new Image();
+        img.src = `assets/bg/${src}`;
+        return img;
+    });
+}
+
+
+/* class row1A {
+    constructor(img, x, y, w, h,) {
+        this.img = img;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+    }
+    tree()
+} */
+
+//teikna leikmann
+//ctx.drawImage(playerImg, player.x, player.y, player.width, player.height)
+//ctx.fillStyle = player.color
+//ctx.fillRect(player.x, player.y, player.width, player.height);
+
+//Klasi sem við réttum ctx og yhnitið á veglínunni
 class vegaLinuKlassi {
     constructor(ctx, yHnit) {
         this.ctx = ctx;
@@ -64,6 +126,8 @@ function collision(obj1, obj2) {
     }
     return false;
 }
+
+
 function draw() {
     //gras
     ctx.beginPath();
@@ -88,7 +152,7 @@ function draw() {
         }
     }
 
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < 5; j++) {
         obstacleGeymsla[j].drawObstacle();
         if (obstacleGeymsla[j].yLocation > canvas.height + 100) {
             obstacleGeymsla = [];
@@ -104,8 +168,9 @@ function draw() {
     }
 
     //teikna leikmann
-    ctx.fillStyle = player.color
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    ctx.drawImage(playerImg, player.x, player.y, player.width, player.height)
+    //ctx.fillStyle = player.color
+    //ctx.fillRect(player.x, player.y, player.width, player.height);
 
     //veglinur nidur
     yVegLina += dy / 4;
@@ -118,49 +183,35 @@ for (let i = 0; i < 11; i++) {
     vegaLinuGeymsla.push(new vegaLinuKlassi(ctx, i * 80));
 }
 
+// -- keyboard controls --
+document.addEventListener("keyup", keyUpHandler, false);
+function keyUpHandler(e) {
+    if (e.keyCode == null) {
+        playerImg.src = '/assets/player/playerMain.png';
+    }
+    /* else if ('keyup') {
+        playerImg = playerImg;
+    } */
+}
 
-//document.addEventListener("keyup", keyUpHandler, false);
 document.addEventListener("keydown", keyDownHandler, false);
 function keyDownHandler(e) {
     if (e.keyCode == 39) {
-        player.x += dx + 20;
+        player.x += dx + 20; //right
         if (player.x > 530) {
             player.x = 560;
+            playerImg.src = '/assets/player/playerTurnR';
         }
     }
     if (e.keyCode == 37) {
         player.x -= dx + 20;
         if (player.x < 0) {
             player.x = 0;
+            playerImg.src = '/assets/player/playerTurnL';
         }
     }
 }
-document.addEventListener("keypress", function (e) {
-    if (e.keycode === "Escape") {
-        running = false;
-    }
-})
 
-
-
-function generateObstacles() {
-    for (let i = 0; i < 10; i++) {
-        dy += 0.1;
-        gamePoints += 1;
-        createObstacle()
-    }
-}
-for (let i = 0; i < 10; i++) {
-    createObstacle()
-}
-function createObstacle() {
-    let xLocation = Math.random() * 500;
-    let yLocation = -200;
-    let xSize = Math.random() * 100;
-    let ySize = Math.random() * 200;
-    var hindrun = new obstacle(ctx, xLocation, yLocation, xSize, ySize, "blue");
-    obstacleGeymsla.push(hindrun);
-}
 
 //Smá skemmtilegt bug með start takkann, prófaðu að smella oft á hann
 //Sé ekki fyrir mér að hafa start og stop svona en fínt tímabundið
@@ -168,13 +219,16 @@ function createObstacle() {
 
 function startGame() {
     closeMenu();
-
     running = true;
     animate();
 }
-function playAgain() {
 
-    reset.hindrun;
+function playAgain() {
+    obstacleGeymsla = [];
+    dy = 5;
+    generateObstacles();
+    gamePoints = 0;
+    closeGameOver();
     running = true;
     animate();
 }
@@ -185,6 +239,27 @@ function stopGame() {
     running = false;
     openGameOver();
 }
+
+// Hindranir
+function generateObstacles() {
+    for (let i = 0; i < 5; i++) {
+        dy += 0.05;
+        gamePoints += 1;
+        createObstacle()
+    }
+}
+for (let i = 0; i < 5; i++) {
+    createObstacle()
+}
+function createObstacle() {
+    let xLocation = Math.random(canvas.width - 60) * 600;
+    let yLocation = -200;
+    let xSize = 80;
+    let ySize = 80;
+    var hindrun = new obstacle(ctx, xLocation, yLocation, xSize, ySize, "blue");
+    obstacleGeymsla.push(hindrun);
+}
+
 
 //menu popup
 function openMenu() {
